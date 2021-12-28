@@ -29,6 +29,7 @@ requests==2.23.0
 Scrapy==2.1.0
 scrapy-proxy-pool==0.1.9
 scrapy-user-agents==0.1.1
+selenium>=3.9.0
 service-identity==18.1.0
 six==1.15.0
 soupsieve==2.0.1
