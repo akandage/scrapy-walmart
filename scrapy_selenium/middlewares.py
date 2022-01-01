@@ -6,6 +6,7 @@ from scrapy import signals
 from scrapy.exceptions import NotConfigured
 from scrapy.http import HtmlResponse
 from selenium.webdriver.support.ui import WebDriverWait
+import time
 
 from .http import SeleniumRequest
 
@@ -98,9 +99,14 @@ class SeleniumMiddleware:
     def process_request(self, request, spider):
         """Process a request using the selenium driver if applicable"""
 
+        # Manually inserted sleep as download delay seems broken.
+        #
+        time.sleep(5.0)
+
         if not isinstance(request, SeleniumRequest):
             return None
 
+        self.driver.delete_all_cookies()
         self.driver.get(request.url)
 
         for cookie_name, cookie_value in request.cookies.items():

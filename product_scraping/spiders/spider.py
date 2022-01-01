@@ -8,6 +8,8 @@ from scrapy_selenium import SeleniumRequest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
+import tempfile
+
 class CaWalmartBot(scrapy.Spider):
     name = 'ca_walmart'
     allowed_domains = ['walmart.ca']
@@ -31,6 +33,7 @@ class CaWalmartBot(scrapy.Spider):
     def start_requests(self):
         start_urls = [
             'https://www.walmart.ca/en/grocery/fruits-vegetables/fruits/N-3852'
+            # 'https://www.walmart.ca/browse/grocery/chips-snacks/cookies/10019-6000194328523-6000194329541'
         ]
 
         for url in start_urls:
@@ -46,7 +49,9 @@ class CaWalmartBot(scrapy.Spider):
         random.shuffle(prod_links)
         for prod_link in prod_links:
             url = prod_link.url
-            yield SeleniumRequest(url=url, callback=self.parse_html, cb_kwargs={'url': url})
+            yield SeleniumRequest(url=url, callback=self.parse_html, 
+                cb_kwargs={'url': url}, wait_until=EC.presence_of_all_elements_located((By.TAG_NAME, 'script')),
+                wait_time=30.0)
         
         next_link_extractor = LxmlLinkExtractor(restrict_xpaths=[
             '//div[@data-automation=\'pagination-root\']/*/a[text()=\'Next\']'
@@ -60,6 +65,11 @@ class CaWalmartBot(scrapy.Spider):
     def parse_html(self, response, url):
 
         item = Product()
+        with tempfile.NamedTemporaryFile(prefix='scrapy_response', delete=False) as f:
+            print('Saving response (len {}) to {}'.format(len(response.body), f.name))
+            f.write(response.body)
+            f.flush()
+            print('Saved response to {}'.format(f.name))
         # branches = {'3106': ['43.656422', '-79.435567'], '3124': ['48.412997', '-89.239717']}
 
         # gral_dict = json.loads(re.findall(r'(\{.*\})', response.xpath("/html/body/script[1]/text()").get())[0])
